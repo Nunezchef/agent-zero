@@ -10,6 +10,12 @@
           <nav>
             <ul>
               <li>
+                <a href="#section-codex">
+                  <img src="/public/api_keys.svg" alt="Codex Proxy" />
+                  <span>Codex Proxy</span>
+                </a>
+              </li>
+              <li>
                 <a href="#section-api-keys">
                   <img src="/public/api_keys.svg" alt="API Keys" />
                   <span>API Keys</span>
@@ -54,6 +60,9 @@
             </ul>
           </nav>
 
+          <div id="section-codex" class="section">
+            <x-component path="settings/external/codex.html"></x-component>
+          </div>
           <div id="section-api-keys" class="section">
             <x-component path="settings/external/api_keys.html"></x-component>
           </div>

@@ -100,6 +100,7 @@ const model = {
     const addProvider = (prov) => {
       if (!prov?.value) return;
       const key = prov.value.toLowerCase();
+      if (key === "codex_proxy") return;
       if (seen.has(key)) return;
       seen.add(key);
       options.push({ value: prov.value, label: prov.label || prov.value });
@@ -191,4 +192,3 @@ const model = {
 const store = createStore("settings", model);
 
 export { store };
-

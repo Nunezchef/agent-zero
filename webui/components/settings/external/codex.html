@@ -1,0 +1,199 @@
+<html>
+  <head>
+    <title>Codex</title>
+    <script type="module">
+      import { store } from "/components/settings/external/codex-store.js";
+    </script>
+  </head>
+
+  <body>
+    <div x-data>
+      <template x-if="$store.codexProvider">
+        <div x-init="$store.codexProvider.init()">
+          <div class="section-title">Codex Proxy</div>
+          <div class="section-description">
+            Connect Agent Zero to the verified OpenAI Codex subscription models through a local proxy that runs inside Agent Zero.
+          </div>
+
+          <div class="field">
+            <div class="field-label">
+              <div class="field-title">Connection</div>
+              <div class="field-description">
+                <span x-text="$store.codexProvider.connected ? 'Connected' : 'Not connected'"></span>
+                <template x-if="$store.codexProvider.accountInfo">
+                  <span>
+                    • <span x-text="$store.codexProvider.accountInfo.email"></span>
+                    (<span x-text="$store.codexProvider.accountInfo.plan"></span>)
+                  </span>
+                </template>
+              </div>
+            </div>
+            <div class="field-control codex-actions">
+              <button class="btn btn-ok" @click="$store.codexProvider.startDeviceFlow()" :disabled="$store.codexProvider.loading || $store.codexProvider.polling">
+                Sign in with OpenAI
+              </button>
+              <button class="btn btn-field" @click="$store.codexProvider.refreshToken()" :disabled="!$store.codexProvider.connected || $store.codexProvider.refreshing">
+                <span x-text="$store.codexProvider.refreshing ? 'Refreshing...' : 'Refresh Token'"></span>
+              </button>
+              <button class="btn btn-danger" @click="$store.codexProvider.disconnect()" :disabled="!$store.codexProvider.connected || $store.codexProvider.loading">
+                Disconnect
+              </button>
+            </div>
+          </div>
+
+          <template x-if="$store.codexProvider.polling">
+            <div class="codex-box">
+              <div class="codex-code" x-text="$store.codexProvider.userCode"></div>
+              <div class="codex-note">
+                Open
+                <a :href="$store.codexProvider.verificationUri" target="_blank" rel="noopener" x-text="$store.codexProvider.verificationUri"></a>
+                and enter the code above.
+              </div>
+              <button class="btn btn-field" @click="$store.codexProvider.cancelPairing()">Cancel</button>
+            </div>
+          </template>
+
+          <div class="field">
+            <div class="field-label">
+              <div class="field-title">Import auth.json</div>
+              <div class="field-description">
+                Paste the contents of <code>~/.codex/auth.json</code> or a JSON object containing access and refresh tokens.
+              </div>
+            </div>
+            <div class="field-control codex-import">
+              <textarea x-model="$store.codexProvider.importJson" placeholder='{"tokens":{"access_token":"...","refresh_token":"..."}}'></textarea>
+              <button class="btn btn-field" @click="$store.codexProvider.importTokens()" :disabled="!$store.codexProvider.importJson || $store.codexProvider.loading">
+                Import Tokens
+              </button>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">
+              <div class="field-title">Proxy</div>
+              <div class="field-description">
+                <span x-text="$store.codexProvider.proxyRunning ? 'Running' : 'Stopped'"></span>
+                <template x-if="$store.codexProvider.proxyUrl">
+                  <span>• <code x-text="$store.codexProvider.proxyUrl"></code></span>
+                </template>
+              </div>
+            </div>
+            <div class="field-control">
+              <label class="toggle">
+                <input type="checkbox" x-model="$store.codexProvider.autoConfigure" />
+                <span class="toggler"></span>
+              </label>
+              <span class="codex-toggle-label">Auto-start proxy on each conversation</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">
+              <div class="field-title">Chat Model</div>
+            </div>
+            <div class="field-control">
+              <select x-model="$store.codexProvider.chatModel">
+                <template x-for="option in $store.codexProvider.availableModels" :key="'chat-' + option.id">
+                  <option :value="option.id" x-text="option.name"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">
+              <div class="field-title">Utility Model</div>
+            </div>
+            <div class="field-control">
+              <select x-model="$store.codexProvider.utilModel">
+                <template x-for="option in $store.codexProvider.availableModels" :key="'util-' + option.id">
+                  <option :value="option.id" x-text="option.name"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">
+              <div class="field-title">Browser Model</div>
+            </div>
+            <div class="field-control">
+              <select x-model="$store.codexProvider.browserModel">
+                <template x-for="option in $store.codexProvider.availableModels" :key="'browser-' + option.id">
+                  <option :value="option.id" x-text="option.name"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+
+          <div class="codex-actions codex-bottom-actions">
+            <button class="btn btn-ok" @click="$store.codexProvider.applyToAgent()" :disabled="!$store.codexProvider.connected || $store.codexProvider.applying">
+              <span x-text="$store.codexProvider.applying ? 'Applying...' : 'Apply to Agent Zero'"></span>
+            </button>
+            <button class="btn btn-warning" @click="$store.codexProvider.stopProxy()" :disabled="!$store.codexProvider.proxyRunning || $store.codexProvider.applying">
+              Stop Proxy
+            </button>
+            <button class="btn btn-field" @click="$store.codexProvider.refresh()" :disabled="$store.codexProvider.loading">
+              Refresh Status
+            </button>
+          </div>
+
+          <template x-if="$store.codexProvider.pairingError">
+            <div class="codex-error" x-text="$store.codexProvider.pairingError"></div>
+          </template>
+        </div>
+      </template>
+    </div>
+
+    <style>
+      .codex-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .codex-box {
+        margin: 1rem 0;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .codex-code {
+        font-size: 1.4rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        margin-bottom: 0.5rem;
+      }
+
+      .codex-note {
+        margin-bottom: 0.75rem;
+      }
+
+      .codex-import {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .codex-import textarea {
+        min-height: 8rem;
+        width: 100%;
+      }
+
+      .codex-toggle-label {
+        margin-left: 0.75rem;
+      }
+
+      .codex-bottom-actions {
+        margin-top: 1rem;
+      }
+
+      .codex-error {
+        margin-top: 1rem;
+        color: #f87171;
+      }
+    </style>
+  </body>
+</html>
